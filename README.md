@@ -62,5 +62,28 @@ LLVM是为了弥合编译器理论和实际开发之间的差异而出现的。�
 
 * github翻译地址：https://github.com/xiaoweiChen/Learn-LLVM-12
 * 本书代码：https://github.com/PacktPublishing/Learn-LLVM-12
-* 译文的LaTeX 环境配置：https://www.cnblogs.com/1625--H/p/11524968.html 
+
+#### 配置LaTeX环境
+
+* Windows下LaTeX 环境配置：https://www.cnblogs.com/1625--H/p/11524968.html 
+* Linux下LaTeX环境配置：
+
+```
+# ubuntu
+sudo apt install texlive-full
+sudo apt install texstudio
+
+# arch linux
+sudo pacman -S texlive-basic	# texlive必要的程序和文件
+sudo pacman -S texlive-langchinese	# 中文支持
+sudo pacman -S texlive-langenglish
+sudo pacman -S texlive-binextra	# tex辅助程序
+sudo pacman -S texlive-fontsrecommended
+sudo pacman -S texlive-fontsextra
+sudo pacman -S texlive-latex
+sudo pacman -S texlive-latexextra
+sudo pacman -S texlive-latexrecommended
+sudo pacman -S texlive-xetex
+sudo pacman -S texstudio		# latex编辑器
+```
 
