@@ -29,9 +29,9 @@ public:
 		minus, star, slash, l_paren, r_paren, KW_with
 	};
 \end{lstlisting}
-除了为每个令牌定义成员外，我添加了两个额外的值:eoi和unknown。eoi表示输入的结束，如果处理完输入的所有字符，则返回eoi。unknown用于词汇错误的情况，例如：\#不是语言标识，所以它会映射为unknown。 
+除了为每个标记定义数字外，我们添加了两个额外的值:eoi和unknown。eoi表示输入的结束，如果处理完输入的所有字符，则返回eoi。unknown用于词汇错误的情况，例如：\#不是语言标识，所以它会映射为unknown。 
 	
-\item 除了枚举之外，该类还有一个成员Text，指向令牌文本的开头(使用前面提到的StringRef类):
+\item 除了枚举之外，该类还有一个成员Text，指向标记的文本的开头(使用前面提到的StringRef类):
 \begin{lstlisting}[caption={}]
 private:
 	TokenKind Kind;
@@ -43,7 +43,7 @@ public:
 \end{lstlisting}
 对于语义处理，知道标识符的名称很重要。
 	
-\item is()和isOneOf()方法用于测试令牌是否属于某种类型。isOneOf()使用可变参数模板，允许可变数量的参数:
+\item is()和isOneOf()方法用于测试标记是否属于某种类型。isOneOf()使用可变参数模板，允许可变数量的参数:
 \begin{lstlisting}[caption={}]
 	bool is(TokenKind K) const { return Kind == K; }
 	bool isOneOf(TokenKind K1, TokenKind K2) const {
@@ -74,7 +74,7 @@ class Lexer {
 };
 #endif
 \end{lstlisting}
-除了构造函数，公共接口只包含next()，返回下一个令牌。该方法的作用类似于迭代器，总会指向下一个可用的令牌。该类的唯一成员是指向输入开头和下一个未处理字符的指针，并且假设缓冲区以0结尾(类似于C字符串)。
+除了构造函数，公共接口只包含next()，返回下一个标记。该方法的作用类似于迭代器，总会指向下一个可用的标记。该类的唯一成员是指向输入开头和下一个未处理字符的指针，并且假设缓冲区以0结尾(类似于C字符串)。
 	
 \item 让我们在Lexer.cpp文件中实现Lexer类。从一些辅助函数开始，可以帮助分类字符:
 \begin{lstlisting}[caption={}]
@@ -119,7 +119,7 @@ void Lexer::next(Token &token) {
 \end{lstlisting}
 至少要处理一个字符。
 	
-\item 因此，首先检查字符是小写还是大写。本例中，令牌要么是标识符，要么是with关键字。因为标识符的正则表达式也匹配关键字，所以常见的解决方案是收集正则表达式匹配的字符，并检查字符串是否是关键字:
+\item 接下来，首先检查字符是小写还是大写。本例中，标记要么是标识符，要么是with关键字。因为标识符的正则表达式也匹配关键字，所以常见的解决方案是收集正则表达式匹配的字符，并检查字符串是否是关键字:
 \begin{lstlisting}[caption={}]
 	if (charinfo::isLetter(*BufferPtr)) {
 		const char *end = BufferPtr + 1;
@@ -132,7 +132,7 @@ void Lexer::next(Token &token) {
 		return;
 	}
 \end{lstlisting}
-formToken()方法用于填充令牌。
+formToken()方法用于填充标记。
 
 \item 接下来，我们检查数字。下面的代码与前面的代码非常相似:
 \begin{lstlisting}[caption={}]
@@ -145,7 +145,7 @@ formToken()方法用于填充令牌。
 	}
 \end{lstlisting}
 
-\item 现在，只剩下由固定字符串定义的标记，这很容易用开关来完成。因为所有这些标记都只有一个字符，可以使用CASE宏来减少输入:
+\item 现在，只剩下由固定字符串定义的标记，这很容易用switch来完成。因为所有这些标记都只有一个字符，可以使用CASE宏来减少输入:
 \begin{lstlisting}[caption={}]
 	else {
 		switch (*BufferPtr) {

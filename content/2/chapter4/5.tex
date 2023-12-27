@@ -1,6 +1,6 @@
-正如前一章中所知，我们需要一个Token类和一个Lexer类。此外，需要一个TokenKind枚举来给每个令牌类一个的数字。拥有一体化的头文件和一个实现文件是无法扩展的，所以需要重构这些内容。TokenKind枚举可以复用，并放置在Basic组件中。Token和Lexer类属于Lexer组件，但是放在不同的头文件和实现文件中。\par
+正如前一章中所知，我们需要一个Token类和一个Lexer类。此外，需要一个TokenKind枚举来给每个标记类一个的数字。拥有一体化的头文件和一个实现文件是无法扩展的，所以需要重构这些内容。TokenKind枚举可以复用，并放置在Basic组件中。Token和Lexer类属于Lexer组件，但是放在不同的头文件和实现文件中。\par
 
-有三种不同类型的标记:关键字、标点符号和表示多值集的标记，例如：CONST关键字，分号分隔符和标识符，它们表示源中的标识符，每个令牌都需要枚举的成员名。关键字和标点符号具有可以用于消息的显示名称。\par
+有三种不同类型的标记:关键字、标点符号和表示多值集的标记，例如：CONST关键字，分号分隔符和标识符，它们表示源中的标识符，每个标记都需要枚举的成员名。关键字和标点符号具有可以用于消息的显示名称。\par
 
 与许多编程语言一样，关键字是标识符的子集。为了将标记分类为关键字，我们需要一个关键字过滤器，它检查所找到的标识符是否确实是关键字。这与C或C++中的行为相同，其中关键字也是标识符的子集。编程语言随着时间的推移而发展，可能会引入新的关键字，例如：K\&R C语言没有使用enum关键字定义的枚举。因此，应该有指示关键字的语言级别的标志。\par
 
@@ -79,7 +79,7 @@ static const char * const TokNames[] = {
 };
 \end{lstlisting}
 
-令牌的文本名称派生自其枚举标签的ID，其有两个特点。首先，需要定义两个TOK和KEYWORD宏，因为KEYWORD的默认定义不使用TOK宏。其次，会在数组的末尾添加一个nullptr值，用于计算NUM\underline{~}TOKENS枚举成员:\par
+标记的文本名称派生自其枚举标签的ID，其有两个特点。首先，需要定义两个TOK和KEYWORD宏，因为KEYWORD的默认定义不使用TOK宏。其次，会在数组的末尾添加一个nullptr值，用于计算NUM\underline{~}TOKENS枚举成员:\par
 
 \begin{lstlisting}[caption={}]
 const char *tok::getTokenName(TokenKind Kind) {
@@ -128,7 +128,7 @@ public:
 	size_t getLength() const { return Length; }
 \end{lstlisting}
 
-SMLoc实例表示源在消息中的位置，它是使用指向令牌的指针创建:\par
+SMLoc实例表示源在消息中的位置，它是使用指向标记的指针创建:\par
 
 \begin{lstlisting}[caption={}]
 SMLoc getLocation() const {
@@ -136,7 +136,7 @@ SMLoc getLocation() const {
 }
 \end{lstlisting}
 
-getIdentifier()和getLiteralData()允许我们访问标识符和文字数据的标记文本。没有必要访问任何其他令牌类型的文本，因为这是隐式的令牌类型:\par
+getIdentifier()和getLiteralData()允许我们访问标识符和文字数据的标记文本。没有必要访问任何其他标记类型的文本，因为这是隐式的标记类型:\par
 
 \begin{lstlisting}[caption={}]
 	StringRef getIdentifier() {

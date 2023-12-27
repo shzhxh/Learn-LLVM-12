@@ -16,7 +16,7 @@ identifier integer\underline{~}literal string\underline{~}literal \\
 PLUS MINUS STAR SLASH
 \end{tcolorbox}
 
-我们指示bison使用\%language指令生成C++代码。使用\%define指令，重写了代码生成的一些默认值:生成的类应该命名为Parser，并位于tinylang命名空间中。此外，表示标记类型的枚举的成员应该以T\underline{~}作为前缀。我们需要3.2或更高版本，因为其中一些变量在这个版本中引入。为了能够与flex交互，我们告诉bison用\%define指令编写一个Parser.h头文件。最后，我们必须使用\%token指令声明所有已使用的令牌。\%\%后面是具体的语法规则:\par
+我们指示bison使用\%language指令生成C++代码。使用\%define指令，重写了代码生成的一些默认值:生成的类应该命名为Parser，并位于tinylang命名空间中。此外，表示标记类型的枚举的成员应该以T\underline{~}作为前缀。我们需要3.2或更高版本，因为其中一些变量在这个版本中引入。为了能够与flex交互，我们告诉bison用\%define指令编写一个Parser.h头文件。最后，我们必须使用\%token指令声明所有已使用的标记。\%\%后面是具体的语法规则:\par
 
 \begin{tcolorbox}[colback=white,colframe=black]
 \%\% \\
@@ -77,7 +77,7 @@ space [ $\setminus$t$\setminus$r]
 
 \{space\}+模式使用序言中定义的空格字符模式，它匹配一个或多个空格字符。我们没有定义任何操作，因此将忽略所有空白。\par
 
-要匹配一个数字，我们使用{digit}+模式。作为一个动作，我们只返回关联的令牌类型。对所有令牌都做了同样的操作。例如，对算术运算符执行以下操作:\par
+要匹配一个数字，我们使用{digit}+模式。作为一个动作，我们只返回关联的标记类型。对所有标记都做了同样的操作。例如，对算术运算符执行以下操作:\par
 
 \begin{tcolorbox}[colback=white,colframe=black]
 "+" \hspace{2cm}return tinylang::Parser::token::T\underline{~}PLUS; \\
