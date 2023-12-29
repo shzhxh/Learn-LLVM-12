@@ -119,7 +119,7 @@ void Lexer::next(Token &token) {
 \end{lstlisting}
 至少要处理一个字符。
 	
-\item 接下来，首先检查字符是小写还是大写。本例中，标记要么是标识符，要么是with关键字。因为标识符的正则表达式也匹配关键字，所以常见的解决方案是收集正则表达式匹配的字符，并检查字符串是否是关键字:
+\item 接下来，首先检查字符是不是字母(小写或大写均可)。这种情况下，标记只能是是标识符或with关键字，要注意标识符的正则表达式也可能匹配到with关键字。常用的解决方案是收集正则表达式匹配的字符(译者注：即这些字符全是字母)，并检查字符串是不是with关键字:
 \begin{lstlisting}[caption={}]
 	if (charinfo::isLetter(*BufferPtr)) {
 		const char *end = BufferPtr + 1;
@@ -145,7 +145,7 @@ formToken()方法用于填充标记。
 	}
 \end{lstlisting}
 
-\item 现在，只剩下由固定字符串定义的标记，这很容易用switch来完成。因为所有这些标记都只有一个字符，可以使用CASE宏来减少输入:
+\item 现在，剩下的标记都是特殊的字符串了，这很容易用switch语句来处理。剩下的这些标记都只有一个字符大小，可以使用CASE宏来减少输入:
 \begin{lstlisting}[caption={}]
 	else {
 		switch (*BufferPtr) {
@@ -162,7 +162,7 @@ CASE(',', Token::Token::comma);
 #undef CASE
 \end{lstlisting}
 
-\item 最后，我们需要检查“意外”的字符:
+\item 最后，我们需要检查意料外的字符:
 \begin{lstlisting}[caption={}]
 		default:
 			formToken(token, BufferPtr + 1, Token::unknown);
@@ -173,7 +173,7 @@ CASE(',', Token::Token::comma);
 \end{lstlisting}
 现在，只缺少formToken()了。
 
-\item 这个helper方法填充Token实例的成员，并更新指向下一个未处理字符:
+\item 这个辅助方法填充Token实例的成员，并更新指针以指向下一个未处理字符:
 \begin{lstlisting}[caption={}]
 void Lexer::formToken(Token &Tok, const char *TokEnd,
                    Token::TokenKind Kind) {
@@ -185,7 +185,7 @@ void Lexer::formToken(Token &Tok, const char *TokEnd,
 \end{lstlisting}
 \end{enumerate}
 
-下一节中，我们将了解如何构造语法分析的解析器。\par
+下一节中，我们将了解如何构造解析器以进行语法分析。\par
 
 
 
