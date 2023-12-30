@@ -54,7 +54,7 @@ Lex和Tok是上一节中类的实例。Tok存储下一个标记(look-ahead)，�
 \end{lstlisting}
 advance()从词法分析器中检索下一个标记。expect()检查look-ahead是否为预期的类型，如果不是则发出错误消息。consume()会检查look-ahead是预期的类型，如果是则检索下一个标记。error()发出错误消息，并将HasError设置为true。\par
 
-\item 对于语法中的每个非终结符，声明一个解析规则的方法:
+\item 对于语法中的每个非终结符(non-terminal)，声明一个方法来解析那个规则:
 \begin{lstlisting}[caption={}]
 	AST *parseCalc();
 	Expr *parseExpr();
@@ -62,10 +62,10 @@ advance()从词法分析器中检索下一个标记。expect()检查look-ahead�
 	Expr *parseFactor();
 \end{lstlisting}
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black, title=Note]
-没有识别和编号的方法。这些规则只返回标记，并替换相应的标记。
+ident和number没有方法来解析。对于这些规则，只需返回标记，并替换为相应的标记。
 \end{tcolorbox}
 
-\item 下面是公共接口。构造函数初始化所有成员并从解析器中检索第一个标记:
+\item 接下来是公共接口。构造函数初始化所有成员并从词法解析器中检索第一个标记:
 \begin{lstlisting}[caption={}]
 	public:
 	Parser(Lexer &Lex) : Lex(Lex), HasError(false) {
@@ -73,12 +73,12 @@ advance()从词法分析器中检索下一个标记。expect()检查look-ahead�
 	}
 \end{lstlisting}
 
-\item 获取错误标志的值:
+\item 需要有一个函数来获取错误标志的值:
 \begin{lstlisting}[caption={}]
 	bool hasError() { return HasError; }
 \end{lstlisting}
 
-\item 最后，parse()是解析的主要入口点:
+\item 最后，parse()方法是解析的入口点:
 \begin{lstlisting}[caption={}]
 	AST *parse();
 };
@@ -92,10 +92,10 @@ advance()从词法分析器中检索下一个标记。expect()检查look-ahead�
 \hspace*{\fill} \par %插入空行
 \textbf{解析器的实现}
 
-深入分析解析器的实现:\par
+深入解析器的实现:\par
 
 \begin{enumerate}
-\item 解析器的实现可以在parser.cpp文件中找到，并以parse()为入口:
+\item 解析器的实现可以在Parser.cpp文件中找到，从parse()方法开始:
 \begin{lstlisting}[caption={}]
 #include "Parser.h"
 
@@ -105,9 +105,9 @@ AST *Parser::parse() {
 	return Res;
 }
 \end{lstlisting}
-parse()的要点是处理整个输入。还记得第一部分中的解析示例添加了一个特殊符号来表示输入的结束吗?在这里检查一下。
+parse()的主要工作是处理整个输入。还记得第一节中的解析示例吧，添加了一个特殊符号来表示输入的结束。我们会在这里进行检查。
 
-\item parseCalc()实现相应的规则。因为其他解析方法遵循相同的模式，所以值得仔细研究一下。回顾一下第一节中的规则:
+\item parseCalc()方法实现了calc的规则。我们需要仔细研究一下这个方法，因为其它解析方法遵循相同的模式。回顾一下第一节中的规则:
 \begin{lstlisting}[caption={}]
 calc : ("with" ident ("," ident)* ":")? expr ;
 \end{lstlisting}
@@ -119,22 +119,22 @@ AST *Parser::parseCalc() {
 	llvm::SmallVector<llvm::StringRef, 8> Vars;
 \end{lstlisting}
 
-\item 要做的第一个决定是是否必须解析可选组。组以with开始，因此将标记与以下值进行比较:
+\item 要做的第一个决定是需不需要解析可选组。可选组以with标记开始，因此将标记与以下值进行比较:
 \begin{lstlisting}[caption={}]
 	if (Tok.is(Token::KW_with)) {
 		advance();
 \end{lstlisting}
 
-\item 接下来，等待一个标识符:
+\item 接下来，应该是一个标识符:
 \begin{lstlisting}[caption={}]
 	if (expect(Token::ident))
 		goto _error;
 	Vars.push_back(Tok.getText());
 	advance();
 \end{lstlisting}
-如果有标识符，则将其保存在Vars中。否则，为一个语法错误，将被单独处理。
+如果是标识符，则将其保存在Vars向量中。否则，为一个句法错误，将被单独处理。
 
-\item 现在的语法中，后面跟着一个重复组，它要解析更多用逗号分隔的标识符:
+\item 在calc的语法中，当前位置后面可以跟着重复组，此时需要解析更多的标识符，重复组里标识符之间用逗号分隔:
 \begin{lstlisting}[caption={}]
 	while (Tok.is(Token::comma)) {
 		advance();
@@ -158,26 +158,26 @@ AST *Parser::parseCalc() {
 	E = parseExpr();
 \end{lstlisting}
 
-\item 通过调用，规则已经成功解析。收集到的信息可以用于创建AST节点:
+\item 通过调用，规则已经成功解析。现在，收集到的信息用于创建此规则的AST节点:
 \begin{lstlisting}[caption={}]
 	if (Vars.empty()) return E;
 	else return new WithDecl(Vars, E);
 \end{lstlisting}
 \end{enumerate}
 
-现在，只缺少错误处理代码了。检测语法错误很容易，但从中错误中恢复却异常复杂。这里，使用了一种称为“恐慌模式”的简单方法。\par
+现在，只缺少错误处理代码了。检测句法错误很容易，但从错误中恢复却异常复杂。这里，使用了一种称为“恐慌模式”的简单方法。\par
 
-恐慌模式下，将从标记流中删除标记，直到找到解析器可以使用的标记才继续工作。大多数编程语言都有表示结束的符号，例如：C++，可以使用 ; (语句的结束) 或 \} (块的结束)。\par
+恐慌模式下，将从标记流中删除标记，直到找到解析器可以使用的标记才继续工作。大多数编程语言都有表示结束的符号，例如：C++，可以使用\ ; (语句的结束) 或 \} (块的结束)。\par
 
-另一方面，错误可能是正在寻找的符号不见了。这种情况下，许多标识可能在解析器继续之前就删除了，这并不像听起来那么糟糕。现今，编译器的速度非常重要。在出现错误的情况下，开发人员可以查看第一个错误消息，修复它，并重新启动编译器。这与使用穿孔卡片不同，在穿孔卡片中需要获取尽可能多的错误消息，因为等编译器运行完成就是第二天了。\par
+另一方面，错误可能是正在寻找的符号不见了。这种情况下，许多标识可能在解析器继续之前就删除了，这并不像听起来那么糟糕。现今，编译器的速度非常重要。在出现错误的情况下，开发人员可以查看第一个错误消息，修复它，并重新启动编译器。这与使用穿孔卡片不同，在穿孔卡片中需要获取尽可能多的错误消息，因为编译器的下次运行只可能是在第二天了。\par
 
 \hspace*{\fill} \par %插入空行
 \textbf{错误处理}
 
-不使用一些任意的标记，而使用另一组标记。对于每个非终止符，会有一系列标识在规则中遵循这个规则。\par
+不使用一些任意的标记，而使用另一组标记。对于每个非终止符，都有一组标识可以跟在那个终止符的后面，这是由那个终止符的语法规则规定的。\par
 
 \begin{enumerate}
-\item calc中，只有输入的结尾跟在这个非终止符之后:
+\item 如果是calc，跟在这个非终止符之后的只能是输入的结束。它的实现比较简单:
 \begin{lstlisting}[caption={}]
 _error:
 	while (!Tok.is(Token::eoi))
@@ -201,9 +201,9 @@ Expr *Parser::parseExpr() {
 	return Left;
 }
 \end{lstlisting}
-规则内的重复组会转换为while循环。注意，isOneOf()的使用简化了对几个标记的检查。
+expr规则里的重复组会转换为while循环。注意，isOneOf()方法的使用简化了多标记情况下的检查。
 
-\item 术语规则的编码看起来都一样:
+\item term规则的编码看起来也一样:
 \begin{lstlisting}[caption={}]
 Expr *Parser::parseTerm() {
 	Expr *Left = parseFactor();
@@ -218,7 +218,7 @@ Expr *Parser::parseTerm() {
 	return Left;
 }
 \end{lstlisting}
-这个方法与parseExpr()非常地相似，可能会想将它们组合成一个。在语法中，可以有一条规则来处理乘法运算符和加法运算符。使用两个规则而不是一个规则的好处是，运算符的优先级与计算的数学顺序非常吻合。如果将两个规则结合起来，则需要在其他地方找出计算顺序。
+这个方法与parseExpr()非常地相似，你可能会想将它们组合成一个。在语法中，这是可能的，即用一条规则来处理乘法运算符和加法运算符。使用两个规则而不是一个规则的好处是，运算符的优先级与计算的数学顺序非常吻合。如果将两个规则结合起来，则需要在其它地方指出计算顺序。
 
 \item 最后，需要实现factor规则:
 \begin{lstlisting}[caption={}]
@@ -231,7 +231,7 @@ Expr *Parser::parseFactor() {
 \end{lstlisting}
 这里使用switch语句似乎更合适，而不是使用if和else if，因为每个选项都只从一个标记开始。通常，应该考虑更偏爱哪种翻译模式。如果以后需要改变解析方法，那么在每个方法都有相同的语法规则实现方式时，就是一种优势。
 
-\item 如果使用switch语句，在默认情况下会进行错误处理:
+\item 如果使用switch语句，在default情况下会进行错误处理:
 \begin{lstlisting}[caption={}]
 		case Token::ident:
 			Res = new Factor(Factor::Ident, Tok.getText());
@@ -245,7 +245,7 @@ Expr *Parser::parseFactor() {
 \end{lstlisting}
 我们在这里避免发出错误消息。
 
-\item 如果括号表达式中有语法错误，则会发出错误消息。这里可以避免第二个错误消息触发:
+\item 如果括号表达式中有句法错误，则会发出错误消息。这样可以避免第二个错误消息触发:
 \begin{lstlisting}[caption={}]
 			while (!Tok.isOneOf(Token::r_paren, Token::star,
 								Token::plus, Token::minus,
@@ -270,7 +270,7 @@ Expr *Parser::parseFactor() {
 
 解析的结果是AST，是输入程序的另一种紧凑表示形式。它捕获了重要的信息。许多编程语言都有作为分隔符的符号，而这些符号没有意义。例如，在C++中，分号;表示单个语句的结束。当然，这些信息对解析器很重要。当我们将语句转换为内存中的表示，分号就可以删除了。\par
 
-如果您查看示例表达式语言的第一条规则，那么很明显with关键字、逗号、顿号和冒号:对程序的意义来说并不真正重要。重要的是可以在表达式中使用的声明变量列表。结果只需要两个类来记录信息:Factor保存数字或标识符，BinaryOp保存算术运算符和表达式的左右两边，WithDecl存储声明的变量和表达式的列表。AST和Expr仅用于创建公共类的层次结构。\par
+如果您查看示例表达式语言的第一条规则，那么很明显with关键字、逗号、顿号和冒号:对程序的意义来说并不真正重要。重要的是可以在表达式中使用的声明变量列表。结果只需要两个类来记录信息:Factor保存数字或标识符，BinaryOp保存算术运算符和表达式的左右两边，WithDecl存储声明的变量和表达式的列表。AST和Expr仅用于创建普通类的层次结构。\par
 
 除了来自解析过的输入的信息外，还支持在使用访问者模式时进行树形遍历。这些都在AST.h头文件中：\par
 
@@ -301,7 +301,7 @@ public:
 \end{lstlisting}
 访问者模式需要知道它必须访问的每个类。因为每个类也引用访问器，所以在文件的顶部声明所有类。请注意AST和Expr的visit()方法有一个默认实现，它什么也不做。
 
-\item AST类是层次结构的根类:
+\item AST类在层次结构的根部:
 \begin{lstlisting}[caption={}]
 class AST {
 public:
@@ -338,7 +338,7 @@ public:
 	}
 };
 \end{lstlisting}
-本例中，数字和变量的处理方法几乎相同，因此可以只创建一个AST节点类来表示它们，Kind成员告诉我们实例代表哪一种情况。在更复杂的语言中，通常希望有不同的AST类，例如：用于数字的NumberLiteral类和用于变量引用的VariableAccess类。
+本例中，数字和变量的处理方法几乎相同，因此可以只创建一个AST节点类来表示它们，Kind成员告诉我们实例代表的是数字还是变量。在更复杂的语言中，通常希望有不同的AST类，例如：用于数字的NumberLiteral类和用于变量引用的VariableAccess类。
 
 \item BinaryOp类保存了计算表达式所需的数据:
 \begin{lstlisting}[caption={}]
@@ -389,4 +389,4 @@ public:
 
 \end{enumerate}
 
-AST是在解析期间构造的。语义分析检查抽象语法树是否符合语言的含义(例如，声明使用的变量)，并可能扩充抽象语法树。之后，使用抽象语法树生成代码。
+AST是在解析期间构造的。语义分析检查抽象语法树是否符合语言的含义(例如，使用的变量已经声明过了)，并可能扩充抽象语法树。语义分析之后，抽象语法树就可以用来进行代码生成了。
