@@ -98,7 +98,7 @@ public:
 using namespace llvm;
 \end{lstlisting}
 
-\item 首先，在访问器中声明一些私有成员。每个编译单元在LLVM中由模块类表示，访问者有一个指向模块调用的指针M。为了便于生成IR，使用生成器(IRBuilder<>类型)。LLVM用类的层次结构来表示IR中的类型，可以在LLVM的上下文中查找基本类型的实例，如i32。这些基本类型会经常使用。为了避免重复查找，需要缓存类型实例，可以是VoidTy、Int32Ty、Int8PtrTy、Int8PtrPtrTy或Int32Zero。V是当前的计算值，通过树形遍历更新。最后，nameMap将一个变量名映射为由calc\underline{~}read()函数返回的值：
+\item 首先，在访问器中声明一些私有成员。每个编译单元在LLVM中由Module类表示，访问者有一个指向模块调用的指针M。为了便于生成IR，使用了Builder\ (其类型为IRBuilder<>)。LLVM用类的层次结构来表示IR中的类型，可以在LLVM的上下文中查找基本类型的实例，如i32。这些基本类型会经常使用。为了避免重复查找，需要缓存类型实例，可以是VoidTy、Int32Ty、Int8PtrTy、Int8PtrPtrTy或Int32Zero。V是当前的计算值，通过树形遍历更新。最后，nameMap将一个变量名映射为由calc\underline{~}read()函数返回的值：
 \begin{lstlisting}[caption={}]
 namespace {
 class ToIRVisitor : public ASTVisitor {

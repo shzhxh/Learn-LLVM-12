@@ -39,7 +39,7 @@ namespace {
 	bool hasError() { return HasError; }
 \end{lstlisting}
 
-与Parser类中一样，使用标记来指示发生了错误，这些名字存储在Scope的集合中。在持有一个变量名的Factor节点中，我们检查该变量名是否在这个集合中。
+与Parser类中一样，使用标志(hasError)来指示发生了错误。名字存储在名叫Scope的集合中。变量名存储在Factor节点中，我们检查该变量名是否在Scope集合中。
 
 \begin{lstlisting}[caption={}]
 	virtual void visit(Factor &Node) override {
